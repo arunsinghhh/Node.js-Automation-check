@@ -28,6 +28,5 @@ jobs:
                 "cd /var/www/html/Node.js-Automation-check",
                 "git pull origin main",
                 "npm install",
-                "npm run build",
                 "pm2 start node-demo"
               ]'
