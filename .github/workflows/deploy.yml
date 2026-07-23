@@ -9,19 +9,25 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Deploy to EC2
-        uses: appleboy/ssh-action@v1.2.0
+      - name: Check out repository
+        uses: actions/checkout@v4.1.7
+
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v4
         with:
-          host: ${{ secrets.EC2_HOST }}
-          username: ${{ secrets.EC2_USER }}
-          key: ${{ secrets.EC2_PRIVATE_KEY }}
-          port: 22
+          aws-region: eu-north-1
+          aws-access-key-id: ${{ secrets.ACCESS_KEY }}
+          aws-secret-access-key: ${{ secrets.SECRET_ACCESS_KEY }}
 
-          script: |
-            cd /var/www/html/Node.js-Automation-check
-
-            git pull origin main
-
-            npm install
-
-            pm2 restart node-demo
+      - name: Deploy and build
+        run: |
+          aws ssm send-command \
+              --instance-ids "${{ secrets.INSTANCE_ID }}" \
+              --document-name "AWS-RunShellScript" \
+              --parameters commands='[
+                "cd /var/www/html/Node.js-Automation-check",
+                "git pull origin main",
+                "npm install",
+                "npm run build",
+                "pm2 restart node-demo"
+              ]'
