@@ -1,0 +1,27 @@
+name: Node.js CI/CD Deployment
+
+on: 
+  push:
+    branches: 
+      - main
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Deploy to EC2
+        uses: appleboy/sshaction@v1.2.0
+        with:
+          host: ${{ secrets.EC2_HOST }}
+          username: ${{ secrets.EC2_USER }}
+          key: ${{ secrets.EC2_PRIVATE_KEY }}
+          port: 22
+
+          script: |
+            cd /var/www/html/Node.js-Automation-check
+
+            git pull origin main
+
+            npm install
+
+            pm2 restart node-demo
