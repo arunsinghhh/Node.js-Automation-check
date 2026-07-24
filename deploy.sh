@@ -6,8 +6,6 @@ cd /var/www/html/Node.js-Automation-check
 
 OLD_COMMIT=$(git rev-parse HEAD)
 
-git pull origin main
-
 npm install
 npm run build
 
