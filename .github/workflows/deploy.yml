@@ -23,7 +23,6 @@ jobs:
 
       - name: Deploy and Auto Rollback
         run: |
-          aws ssm send-command \
             aws ssm send-command \
                 --instance-ids "${{ secrets.INSTANCE_ID }}" \
                 --document-name "AWS-RunShellScript" \      
