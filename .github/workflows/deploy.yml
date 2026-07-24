@@ -20,16 +20,43 @@ jobs:
         with:
           role-to-assume: arn:aws:iam::020262236319:role/CI-CD-Role
           aws-region: ap-south-1
-      - name: Deploy and build
+
+      - name: Deploy and Auto Rollback
         run: |
           aws ssm send-command \
-              --instance-ids "${{ secrets.INSTANCE_ID }}" \
-              --document-name "AWS-RunShellScript" \
-              --parameters commands='[
-                "cd /var/www/html/Node.js-Automation-check",
-                "git pull origin main",
-                "npm install",
-                "npm run build",
-                "pm2 start app.js --name node-demo"
-              ]'
-~                                                    
+            --instance-ids "${{ secrets.INSTANCE_ID }}" \
+            --document-name "AWS-RunShellScript" \
+            --parameters commands='[
+              "bash -c '\''
+
+              cd /var/www/html/Node.js-Automation-check
+
+              OLD_COMMIT=$(git rev-parse HEAD)
+              echo Previous Commit: $OLD_COMMIT
+
+              if git pull origin main && npm install && npm run build; then
+
+                pm2 restart node-demo || pm2 start app.js --name node-demo
+
+                sleep 5
+
+                curl -f http://localhost:3000
+
+                echo Deployment Successful
+
+              else
+
+                echo Deployment Failed...
+                echo Rolling back...
+
+                git reset --hard $OLD_COMMIT
+                npm install
+                npm run build
+                pm2 restart node-demo
+
+                exit 1
+
+              fi
+
+              '\''"
+            ]'
