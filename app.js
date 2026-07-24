@@ -1,4 +1,5 @@
 const express = require("express");
+thisVariableDoesNotExist();
 const path = require("path");
 
 const app = express();
