@@ -13,7 +13,7 @@ jobs:
 
     steps:
       - name: Check out repository
-        uses: actions/checkout@v4.1.7
+        uses: actions/checkout@v4
 
       - name: Assume AWS Role using Github OIDC
         uses: aws-actions/configure-aws-credentials@v4
@@ -23,11 +23,7 @@ jobs:
 
       - name: Deploy and Auto Rollback
         run: |
-            aws ssm send-command
-                --instance-ids "${{ secrets.INSTANCE_ID }}"
-                --document-name "AWS-RunShellScript" 
-                --parameters commands='[
-                  "cd /var/www/html/Node.js-Automation-check",
-                  "chmod +x deploy.sh",
-                  "./deploy.sh"
-               ]'
+          aws ssm send-command \
+            --instance-ids "${{ secrets.INSTANCE_ID }}" \
+            --document-name "AWS-RunShellScript" \
+            --parameters 'commands=["cd /var/www/html/Node.js-Automation-check","chmod +x deploy.sh","./deploy.sh"]'
