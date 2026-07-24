@@ -27,14 +27,15 @@ jobs:
             --instance-ids "${{ secrets.INSTANCE_ID }}" \
             --document-name "AWS-RunShellScript" \
             --parameters commands='[
-              "bash -c '\''
-
+              
               cd /var/www/html/Node.js-Automation-check
 
               OLD_COMMIT=$(git rev-parse HEAD)
               echo Previous Commit: $OLD_COMMIT
 
-              if git pull origin main && npm install && npm run build; then
+              git pull origin main 
+              npm install
+              npm run build
 
                 pm2 restart node-demo || pm2 start app.js --name node-demo
 
