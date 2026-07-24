@@ -23,9 +23,9 @@ jobs:
 
       - name: Deploy and Auto Rollback
         run: |
-            aws ssm send-command \
-                --instance-ids "${{ secrets.INSTANCE_ID }}" \
-                --document-name "AWS-RunShellScript" \      
+            aws ssm send-command
+                --instance-ids "${{ secrets.INSTANCE_ID }}"
+                --document-name "AWS-RunShellScript" 
                 --parameters commands='[
                   "cd /var/www/html/Node.js-Automation-check",
                   "chmod +x deploy.sh",
