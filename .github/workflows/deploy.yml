@@ -1,12 +1,12 @@
 name: Node.js CI/CD Deployment
 
-on: 
+on:
   workflow_dispatch:
-    
-permissions: 
+
+permissions:
   id-token: write
   contents: read
-  
+
 jobs:
   deploy:
     runs-on: ubuntu-latest
@@ -20,15 +20,33 @@ jobs:
         with:
           role-to-assume: arn:aws:iam::020262236319:role/CI-CD-Role
           aws-region: ap-south-1
-      - name: Deploy and build
+
+      - name: Deploy with Auto Rollback
         run: |
           aws ssm send-command \
-              --instance-ids "${{ secrets.INSTANCE_ID }}" \
-              --document-name "AWS-RunShellScript" \
-              --parameters commands='[
-                "cd /var/www/html/Node.js-Automation-check",
-                "git pull origin main",
-                "npm install",
-                "npm run build",
-                "pm2 start app.js --name node-demo"
-              ]'
+            --instance-ids "${{ secrets.INSTANCE_ID }}" \
+            --document-name "AWS-RunShellScript" \
+            --parameters commands='[
+              "cd /var/www/html/Node.js-Automation-check",
+              "OLD_COMMIT=$(git rev-parse HEAD)",
+              "echo Current Commit: $OLD_COMMIT",
+              "if git pull origin main && npm install && npm run build && pm2 restart node-demo; then",
+              "  echo Deployment Successful",
+              "  sleep 10",
+              "  curl -f http://localhost:3000 || {",
+              "    echo Health Check Failed",
+              "    git reset --hard $OLD_COMMIT",
+              "    npm install",
+              "    npm run build",
+              "    pm2 restart node-demo",
+              "    exit 1",
+              "  }",
+              "else",
+              "  echo Deployment Failed",
+              "  git reset --hard $OLD_COMMIT",
+              "  npm install",
+              "  npm run build",
+              "  pm2 restart node-demo",
+              "  exit 1",
+              "fi"
+            ]'
