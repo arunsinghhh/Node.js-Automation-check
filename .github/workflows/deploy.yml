@@ -26,7 +26,9 @@ jobs:
           aws ssm send-command \
             --instance-ids "${{ secrets.INSTANCE_ID }}" \
             --document-name "AWS-RunShellScript" \
-            --parameters 'commands=["cd /var/www/html/Node.js-Automation-check",
-              "git pull origin main",
-              "chmod +x deploy.sh",
-              "./deploy.sh"]'
+            --parameters commands='[
+              cd /var/www/html/Node.js-Automation-check,
+              git pull origin main,
+              chmod +x deploy.sh,
+              ./deploy.sh
+           ]'
